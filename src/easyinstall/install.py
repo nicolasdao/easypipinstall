@@ -16,20 +16,6 @@ PROD_SECTION_REQUIRE = "install_requires"
 DEV_SECTION = "options.extras_require"
 DEV_SECTION_REQUIRE = "dev"
 
-# Gets the terminal inputs
-_, *libs = sys.argv
-
-# Exists if no inputs were provided
-if not (len(libs)):
-    exit()
-
-# Filters the inputs between libraries and options (e.g., -D for dev dependencies)
-libDefs = []
-options = []
-for lib in libs:
-    tar = options if re.search(r"^-", lib) else libDefs
-    tar.append(lib)
-
 
 def getItems(s=""):
     """Gets the unique items in a list where the separator is a new line"""
@@ -84,81 +70,7 @@ def getPackageDeps(lib):
         return []
 
 
-def main():
-    """Main program"""
-    # Reads the 'setup.cfg' file
-
-    print("Hello dude")
-    return
-    config = configparser.ConfigParser()
-    config.read(SETUP_FILE)
-    dev = "-D" in options
-    prodDeps, prodNames = getItems(
-        getConfig(config, PROD_SECTION, PROD_SECTION_REQUIRE)
-    )
-    devDeps, devNames = getItems(getConfig(config, DEV_SECTION, DEV_SECTION_REQUIRE))
-
-    prodChanged = False
-    devChanged = False
-    for lib in libDefs:
-        # Gets the library that must be installed without its version
-        name = getLibNameOnly(lib)
-        cleanName = re.sub(r",\s*$", "", lib)
-        if not name:
-            continue
-
-        existingProdName = find(name, prodDeps)
-        existingDevName = find(name, devDeps)
-
-        if "-u" in options:
-            if existingProdName:
-                prodChanged = True
-                prodDeps.remove(existingProdName)
-            if existingDevName:
-                devChanged = True
-                devDeps.remove(existingDevName)
-            uninstall(name)
-        else:
-            if existingProdName or existingDevName:
-                pass
-            if dev:
-                if existingDevName or existingProdName:
-                    pass
-                else:
-                    devChanged = True
-                    devDeps.append(cleanName)
-            else:
-                if existingProdName:
-                    pass
-                else:
-                    if existingDevName:
-                        # If the dep is already in dev, remove it from there and add it to prod
-                        devChanged = True
-                        devDeps.remove(existingDevName)
-                        uninstall(name)
-
-                    prodChanged = True
-                    prodDeps.append(cleanName)
-            install(lib, dev)
-
-    if prodChanged:
-        initConfig(config, PROD_SECTION, PROD_SECTION_REQUIRE)
-        if len(prodDeps):
-            config[PROD_SECTION][PROD_SECTION_REQUIRE] = "\n" + "\n".join(prodDeps)
-        else:
-            del config[PROD_SECTION][PROD_SECTION_REQUIRE]
-    if devChanged:
-        initConfig(config, DEV_SECTION, DEV_SECTION_REQUIRE)
-        if len(devDeps):
-            config[DEV_SECTION][DEV_SECTION_REQUIRE] = "\n" + "\n".join(devDeps)
-        else:
-            del config[DEV_SECTION][DEV_SECTION_REQUIRE]
-
-    with open(SETUP_FILE, "w") as configfile:
-        config.write(configfile)
-
-
-def install(lib, dev=False):
+def pip_install(lib, dev=False):
     """
     Installs library 'lib' and freeze the dependencies into requirements.txt
     and prod-requirements.txt (if the dev mode is not on). The strategy used to
@@ -191,7 +103,7 @@ def install(lib, dev=False):
                 pfile.write("\n".join(prodDeps))
 
 
-def uninstall(lib):
+def pip_uninstall(lib):
     """
     Uninstalls library 'lib' and freeze the dependencies in both requirements.txt and prod-requirements.txt.
     The strategy used to uninstall the dependencies in prod mode is as follow:
@@ -304,5 +216,94 @@ getNewLines = partial(getDiffLines, mode="new")
 getDeletedLines = partial(getDiffLines, mode="deleted")
 
 
-if __name__ == "__main__":
-    main()
+def main(mode="install"):
+    """Main program"""
+    # Reads the 'setup.cfg' file
+
+    # Gets the terminal inputs
+    _, *libs = sys.argv
+
+    print("Hello dude", *libs)
+    return
+
+    # Exists if no inputs were provided
+    if not (len(libs)):
+        exit()
+
+    # Filters the inputs between libraries and options (e.g., -D for dev dependencies)
+    libDefs = []
+    options = []
+    for lib in libs:
+        tar = options if re.search(r"^-", lib) else libDefs
+        tar.append(lib)
+
+    config = configparser.ConfigParser()
+    config.read(SETUP_FILE)
+    dev = "-D" in options
+    prodDeps, prodNames = getItems(
+        getConfig(config, PROD_SECTION, PROD_SECTION_REQUIRE)
+    )
+    devDeps, devNames = getItems(getConfig(config, DEV_SECTION, DEV_SECTION_REQUIRE))
+
+    prodChanged = False
+    devChanged = False
+    for lib in libDefs:
+        # Gets the library that must be installed without its version
+        name = getLibNameOnly(lib)
+        cleanName = re.sub(r",\s*$", "", lib)
+        if not name:
+            continue
+
+        existingProdName = find(name, prodDeps)
+        existingDevName = find(name, devDeps)
+
+        if mode != "install":
+            if existingProdName:
+                prodChanged = True
+                prodDeps.remove(existingProdName)
+            if existingDevName:
+                devChanged = True
+                devDeps.remove(existingDevName)
+            pip_uninstall(name)
+        else:
+            if existingProdName or existingDevName:
+                pass
+            if dev:
+                if existingDevName or existingProdName:
+                    pass
+                else:
+                    devChanged = True
+                    devDeps.append(cleanName)
+            else:
+                if existingProdName:
+                    pass
+                else:
+                    if existingDevName:
+                        # If the dep is already in dev, remove it from there and add it to prod
+                        devChanged = True
+                        devDeps.remove(existingDevName)
+                        pip_uninstall(name)
+
+                    prodChanged = True
+                    prodDeps.append(cleanName)
+            pip_install(lib, dev)
+
+    if prodChanged:
+        initConfig(config, PROD_SECTION, PROD_SECTION_REQUIRE)
+        if len(prodDeps):
+            config[PROD_SECTION][PROD_SECTION_REQUIRE] = "\n" + "\n".join(prodDeps)
+        else:
+            del config[PROD_SECTION][PROD_SECTION_REQUIRE]
+    if devChanged:
+        initConfig(config, DEV_SECTION, DEV_SECTION_REQUIRE)
+        if len(devDeps):
+            config[DEV_SECTION][DEV_SECTION_REQUIRE] = "\n" + "\n".join(devDeps)
+        else:
+            del config[DEV_SECTION][DEV_SECTION_REQUIRE]
+
+    with open(SETUP_FILE, "w") as configfile:
+        config.write(configfile)
+
+
+install = partial(main, mode="install")
+uninstall = partial(main, mode="uninstall")

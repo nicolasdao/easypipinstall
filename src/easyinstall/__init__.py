@@ -1,1 +1,1 @@
-from install import main  # noqa
+from .install import install, uninstall  # noqa
