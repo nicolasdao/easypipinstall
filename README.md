@@ -1,6 +1,6 @@
-# EASYINSTALL
+# EASY PIP INSTALL
 
-easyinstall installs Python packages with automatic `requirements.txt`, `prod-requirements.txt` and `setup.cfg` files updates. It also easily uninstall all the dependencies from those files. It uses an opiniated pattern where:
+easy-pip-install installs Python packages with automatic `requirements.txt`, `prod-requirements.txt` and `setup.cfg` files updates. It also easily uninstall all the dependencies from those files. It uses an opiniated pattern where:
 - Only two type of dependencies exist: `prod` and `dev`.
 - All dependencies are listed under `requirements.txt`.
 - By default, dependencies are listed in both `requirements.txt` and `prod-requirements.txt`.
@@ -11,7 +11,7 @@ easyinstall installs Python packages with automatic `requirements.txt`, `prod-re
 
 To install:
 ```
-pip install easyinstall
+pip install easy-pip-install
 ```
 
 This will add two new CLI utilities: `easyi` (install) and `easyu` (uninstall).
