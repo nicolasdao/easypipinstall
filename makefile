@@ -1,8 +1,10 @@
 b:
 	rm -rf dist; \
+	rm -rf src/*.egg-info; \
 	python3 -m build
 bp:
 	rm -rf dist; \
+	rm -rf src/*.egg-info; \
 	python3 -m build; \
 	twine upload dist/* $(options)
 install:

@@ -288,12 +288,14 @@ def main(mode="install"):
     if prodChanged:
         initConfig(config, PROD_SECTION, PROD_SECTION_REQUIRE)
         if len(prodDeps):
+            prodDeps.sort()
             config[PROD_SECTION][PROD_SECTION_REQUIRE] = "\n" + "\n".join(prodDeps)
         else:
             del config[PROD_SECTION][PROD_SECTION_REQUIRE]
     if devChanged:
         initConfig(config, DEV_SECTION, DEV_SECTION_REQUIRE)
         if len(devDeps):
+            devDeps.sort()
             config[DEV_SECTION][DEV_SECTION_REQUIRE] = "\n" + "\n".join(devDeps)
         else:
             del config[DEV_SECTION][DEV_SECTION_REQUIRE]
