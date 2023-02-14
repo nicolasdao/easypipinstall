@@ -223,9 +223,6 @@ def main(mode="install"):
     # Gets the terminal inputs
     _, *libs = sys.argv
 
-    print("Hello dude", *libs)
-    return
-
     # Exists if no inputs were provided
     if not (len(libs)):
         exit()
