@@ -1,6 +1,6 @@
 # EASY PIP INSTALL
 
-easypipinstall installs Python packages with automatic `requirements.txt`, `prod-requirements.txt` and `setup.cfg` files updates. It also easily uninstall all the dependencies from those files. It uses an opiniated pattern where:
+`easypipinstall` installs Python packages in a way similar to NPM in NodeJS. It automatically maintains the `requirements.txt`, `prod-requirements.txt` and `setup.cfg` files. It also easily uninstall all the dependencies from those files. It uses an opiniated pattern where:
 - Only two type of dependencies exist: `prod` and `dev`.
 - All dependencies are listed under `requirements.txt`.
 - By default, dependencies are listed in both `requirements.txt` and `prod-requirements.txt`.
