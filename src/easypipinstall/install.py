@@ -216,12 +216,13 @@ getNewLines = partial(getDiffLines, mode="new")
 getDeletedLines = partial(getDiffLines, mode="deleted")
 
 
-def main(mode="install"):
+def main(*libs, mode="install"):
     """Main program"""
     # Reads the 'setup.cfg' file
 
-    # Gets the terminal inputs
-    _, *libs = sys.argv
+    if not (len(libs)):
+        # Gets the terminal inputs
+        _, *libs = sys.argv
 
     # Exists if no inputs were provided
     if not (len(libs)):
