@@ -4,9 +4,14 @@ import os
 import subprocess
 
 SETUP_FILE = "setup.cfg"
+CHANGELOG = "CHANGELOG.md"
 SUPPORTED_COMMANDS = ["show", "bump"]
 SUPPORTED_VERSION_BITS = ["patch", "minor", "major"]
+CHANGELOG_HEADER = """# Changelog
 
+All notable changes to this project will be documented in this file. 
+
+"""
 
 class bcolors:
     HEADER = "\033[95m"
@@ -86,8 +91,12 @@ def bump(version="patch"):
 
 def _update_changelog(old_version, new_version):
     commits = _get_latest_commits(old_version)
-    print(commits)
+    _update_changelog(version=new_version, commits=commits)
 
+def _update_changelog(version, commits):
+  if not os.path.exists(CHANGELOG):
+    with open(CHANGELOG, "a+") as file:
+      file.write(CHANGELOG_HEADER)
 
 def _get_latest_commits(old_version):
     commits_str = subprocess.check_output(
@@ -108,24 +117,35 @@ def _get_latest_commits(old_version):
     commits = []
     for x in re.split("\n", commits_str):
         if x:
-            commit = re.sub(r"^.{8}(\((.*?)\)\s){0,1}", "", x)
+            commit = re.sub(r"^.{8}(\((.*?)\)\s){0,1}", "", x).strip()
             type = None
             if re.search(r"^feat", commit):
                 type = "feat"
+                commit = re.sub(r"^feat:\s*", "", commit)
             elif re.search(r"^doc", commit):
                 type = "doc"
+                commit = re.sub(r"^doc:\s*", "", commit)
+                commit = re.sub(r"^docs:\s*", "", commit)
             elif re.search(r"^fix", commit):
                 type = "fix"
+                commit = re.sub(r"^fix", "", commit)
+                commit = re.sub(r"^:", "", commit)
+                commit = commit.strip()
             elif re.search(r"^refactor", commit):
                 type = "refactor"
+                commit = re.sub(r"^refactor:\s*", "", commit)
             elif re.search(r"^test", commit):
                 type = "test"
+                commit = re.sub(r"^test:\s*", "", commit)
             elif re.search(r"^chore", commit):
                 type = "chore"
+                commit = re.sub(r"^chore:\s*", "", commit)
             elif re.search(r"^config", commit):
                 type = "config"
+                commit = re.sub(r"^config:\s*", "", commit)
             elif re.search(r"^style", commit):
                 type = "style"
+                commit = re.sub(r"^style:\s*", "", commit)
 
             if type is not None:
                 commits.append({"commit": commit, "type": type})
