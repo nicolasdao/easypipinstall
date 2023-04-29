@@ -85,7 +85,52 @@ def bump(version="patch"):
 
 
 def _update_changelog(old_version, new_version):
-    git_status_out = subprocess.check_output(("git", "log", f"v{old_version}..head")).decode("UTF-8")
+    commits = _get_latest_commits(old_version)
+    print(commits)
+
+
+def _get_latest_commits(old_version):
+    commits_str = subprocess.check_output(
+        ("git", "log", f"v{old_version}..head", "--oneline")
+    ).decode("UTF-8")
+    old_version_not_tagged = re.search("unknown revision or path", f"{commits_str}")
+
+    if old_version_not_tagged:
+        commits_str = subprocess.check_output(
+            ("git", "log", "-20", "--oneline")
+        ).decode("UTF-8")
+        no_commits_str_yet = re.search(
+            "does not have any commits_str yet", f"{commits_str}"
+        )
+        if no_commits_str_yet:
+            commits_str = ""
+
+    commits = []
+    for x in re.split("\n", commits_str):
+        if x:
+            commit = re.sub(r"^.{8}(\((.*?)\)\s){0,1}", "", x)
+            type = None
+            if re.search(r"^feat", commit):
+                type = "feat"
+            elif re.search(r"^doc", commit):
+                type = "doc"
+            elif re.search(r"^fix", commit):
+                type = "fix"
+            elif re.search(r"^refactor", commit):
+                type = "refactor"
+            elif re.search(r"^test", commit):
+                type = "test"
+            elif re.search(r"^chore", commit):
+                type = "chore"
+            elif re.search(r"^config", commit):
+                type = "config"
+            elif re.search(r"^style", commit):
+                type = "style"
+
+            if type is not None:
+                commits.append({"commit": commit, "type": type})
+
+    return commits
 
 
 def _is_git():
