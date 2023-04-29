@@ -85,7 +85,7 @@ def bump(version="patch"):
 
 
 def _update_changelog(old_version, new_version):
-    git_status_out = subprocess.check_output(("git", "log", f"v{old_version}..")).decode("UTF-8")
+    git_status_out = subprocess.check_output(("git", "log", f"v{old_version}..head")).decode("UTF-8")
 
 
 def _is_git():
