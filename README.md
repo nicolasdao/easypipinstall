@@ -1,7 +1,7 @@
 # EASY PIP INSTALL
 
-`easypipinstall` installs Python packages similarly to NPM in NodeJS. It automatically maintains the `requirements.txt`, `prod-requirements.txt` and `setup.cfg` files. It also easily uninstalls all the dependencies from those files. It uses an opinionated pattern where:
-- Only two types of dependencies exist: `prod` and `dev`.
+`easypipinstall` is a dev utility that helps installing Python packages similarly to NPM in NodeJS. It automatically maintains the `requirements.txt`, `prod-requirements.txt` and `setup.cfg` files. It also easily uninstalls all the dependencies from those files. It uses an opinionated pattern where:
+- Only two types of dependencies exist: `dev` (via requirements.txt) and `prod` (via prod-requirements.txt, which is a subset of requirements.txt).
 - All dependencies are listed under `requirements.txt`.
 - By default, dependencies are listed in both `requirements.txt` and `prod-requirements.txt`.
 - Dependencies are not listed under `prod-requirements.txt` when the `-D` option (development mode) is used. 
@@ -14,10 +14,13 @@ To install:
 pip install easypipinstall
 ```
 
-This will add two new CLI utilities: `easyi` (install) and `easyu` (uninstall).
+This will add three new CLI utilities: 
+1. [`easyi` (install)](#easyi-to-install)
+2. [`easyu` (uninstall)](#easyu-to-uninstall)
+3. [`easyv` (version)](#easyv-to-version)
 
 Examples:
-```
+```shell
 easyi numpy
 ```
 
@@ -30,7 +33,7 @@ This installs `numpy` (via `pip install`) then automatically updates the followi
 	```
 - `requirements.txt` and `prod-requirements.txt`
 
-```
+```shell
 easyi flake8 black -D
 ```
 
@@ -44,7 +47,7 @@ This installs `flake8` and `black` (via `pip install`) and then automatically up
 	```
 - `requirements.txt` only, as those dependencies are installed for development purposes only.
 
-```
+```shell
 easyu flake8
 ```
 
@@ -53,6 +56,10 @@ This uninstalls `flake8` as well as all its dependencies. Those dependencies are
 
 # Table of contents
 
+> * [APIs](#apis)
+>	- [`easyi` to install](#easyi-to-install)
+>	- [`easyu` to uninstall](#easyu-to-uninstall)
+>	- [`easyv` to version](#easyv-to-version)
 > * [Dev](#dev)
 >	- [Getting started](#dev---getting-started)
 >	- [CLI commands](#cli-commands)
@@ -64,6 +71,86 @@ This uninstalls `flake8` as well as all its dependencies. Those dependencies are
 > * [FAQ](#faq)
 > * [References](#references)
 > * [License](#license)
+
+# APIs
+## `easyi` to install
+
+```shell
+easyi numpy
+```
+
+This installs `numpy` (via `pip install`) then automatically updates the following files:
+- `setup.cfg` (WARNING: this file must already exists):
+	```
+	[options]
+	install_requires = 
+		numpy
+	```
+- `requirements.txt` and `prod-requirements.txt`
+
+```shell
+easyi flake8 black -D
+```
+
+This installs `flake8` and `black` (via `pip install`) and then automatically updates the following files:
+- `setup.cfg` (WARNING: this file must already exist):
+	```
+	[options.extras_require]
+	dev = 
+		black
+		flake8
+	```
+- `requirements.txt` only, as those dependencies are installed for development purposes only.
+
+## `easyu` to uninstall
+
+```shell
+easyu flake8
+```
+
+This uninstalls `flake8` as well as all its dependencies. Those dependencies are uninstalled only if other project dependencies do not use them. The `setup.cfg` and `requirements.txt` are automatically updated.
+
+## `easyv` to version
+
+```shell
+easyv
+```
+
+This returns the current package's version as defined in the `setup.cfg` file.
+
+```shell
+easyv bump
+```
+
+Bumps the patch bit of the version (e.g., before `2.0.0` after `2.0.1`). Up to three updates are applied:
+1. Updates the version property in the `setup.cfg` file.
+2. If the project is under source control with git and git is installed:
+	1. Updates the `CHANGELOG.md` file using the commit messages between the current branch and the last version tag. If the `CHANGELOG.md` file does not exist, it is automatically created.
+	2. git commit and tag (using the version number prefixed with `v`) the project.
+
+```shell
+easyv bump patch
+```
+
+Same as above.
+
+```shell
+easyv bump minor
+```
+
+Update the minor bit of the version.
+
+```shell
+easyv bump major
+```
+
+Update the major bit of the version.
+
+```shell
+easyv bump 2.0.0
+```
+
+Explicitly sets the version to `2.0.0`.
 
 # Dev
 ## Dev - Getting started
@@ -117,7 +204,7 @@ make t
 
 This command runs the following three python executables:
 
-```
+```shell
 black ./
 flake8 ./
 pytest --capture=no --verbose $(testpath)
@@ -160,7 +247,7 @@ tests/error/test_catch_errors.py::test_catch_errors_StackedException_arbitrary_i
 
 To execute a specific test only, add the `testpath` option with the test path. For example, to execute the only FAILED test in the example above, run this command:
 
-```
+```shell
 make t testpath=tests/error/test_catch_errors.py::test_catch_errors_StackedException_arbitrary_inputs
 ```
 
@@ -172,7 +259,7 @@ __IMPORTANT:__ First, make sure you've updated the version in the the `setup.cfg
 
 To build your package, run:
 
-```
+```shell
 make b
 ```
 
@@ -180,20 +267,20 @@ This command is a wrapper around `python3 -m build`.
 
 To build and publish your package to https://pypi.org, run:
 
-```
+```shell
 make p
 ```
 
 This command is a wrapper around the following commands:
 
-```
+```shell
 python3 -m build; \
 twine upload dist/*
 ```
 
 Those two steps have been bundled in a single command:
 
-```
+```shell
 make bp
 ```
 
@@ -201,7 +288,7 @@ make bp
 
 To test your package locally before deploying it to https://pypi.org, you can run build and install it locally with this command:
 
-```
+```shell
 make bi
 ```
 
