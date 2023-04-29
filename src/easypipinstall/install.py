@@ -86,11 +86,10 @@ def pip_install(lib, dev=False):
     freeze()
     if not dev:
         requirements = getFileContent(GLOBAL_REQUIREMENTS)
-        print(requirements)
         deps = getExactDeps(requirements, lib)
         if len(deps):
+            prodRequirements = getFileContent(PROD_REQUIREMENTS)
             with open(PROD_REQUIREMENTS, "w") as pfile:
-                prodRequirements = getFileContent(PROD_REQUIREMENTS)
                 prodDeps, prodNames = getItems(prodRequirements)
                 for dependency in deps:
                     libName = getLibNameOnly(dependency)
@@ -99,7 +98,7 @@ def pip_install(lib, dev=False):
                     else:
                         prodDeps[prodNames.index(libName)] = dependency
                 prodDeps = list(set(prodDeps))
-                prodDeps.sort()
+                prodDeps = sorted(prodDeps, key=str.casefold)
                 pfile.write("\n".join(prodDeps))
 
 
@@ -126,8 +125,8 @@ def pip_uninstall(lib):
     newRequirements = getFileContent(GLOBAL_REQUIREMENTS)
     deletedLines = getDeletedLines(oldRequirements, newRequirements)
     if len(deletedLines):
+        oldProdRequirements = getFileContent(PROD_REQUIREMENTS)
         with open(PROD_REQUIREMENTS, "w") as pfile:
-            oldProdRequirements = getFileContent(PROD_REQUIREMENTS)
             prodLines = oldProdRequirements.split("\n")
             newProdLines = []
             for line in prodLines:
@@ -167,7 +166,7 @@ def getFileContent(file):
         return content
 
     if os.path.exists(file):
-        with open(file) as f:
+        with open(file, "r") as f:
             content = f.read()
 
     return content
