@@ -26,9 +26,13 @@ def getItems(s=""):
     return (items, names)
 
 
-def freeze():
-    with open(GLOBAL_REQUIREMENTS, "w") as f:
-        f.write(subprocess.check_output(("pip", "freeze")).decode("UTF-8"))
+def freeze(inspect_only=False):
+    content = subprocess.check_output(("pip", "freeze")).decode("UTF-8")
+    if inspect_only:
+        print(content)
+    else:
+        with open(GLOBAL_REQUIREMENTS, "w") as f:
+            f.write(content)
 
 
 def getConfig(config, section, property):
