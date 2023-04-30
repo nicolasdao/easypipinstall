@@ -16,3 +16,5 @@ p:
 t:
 	black ./
 	flake8 ./
+v:
+	python3 -c 'from src.easypipinstall.version import version; version("$(cmd)", "$(ver)")'

@@ -8,7 +8,7 @@ import importlib
 
 # Defines constants
 SETUP_FILE = "setup.cfg"
-LIB_COMPARATOR_REGEX = r"[>=<\n\s,]"
+LIB_COMPARATOR_REGEX = r"[>=<\r\n\s,]"
 GLOBAL_REQUIREMENTS = "requirements.txt"
 PROD_REQUIREMENTS = "prod-requirements.txt"
 PROD_SECTION = "options"
@@ -21,7 +21,7 @@ def getItems(s=""):
     """Gets the unique items in a list where the separator is a new line"""
     if not s:
         return ([], [])
-    items = list(set(x for x in re.split("\n", s) if x))
+    items = list(set(x for x in re.split(os.linesep, s) if x))
     names = [getLibNameOnly(x) for x in items]
     return (items, names)
 
@@ -103,7 +103,7 @@ def pip_install(lib, dev=False):
                         prodDeps[prodNames.index(libName)] = dependency
                 prodDeps = list(set(prodDeps))
                 prodDeps = sorted(prodDeps, key=str.casefold)
-                pfile.write("\n".join(prodDeps))
+                pfile.write(os.linesep.join(prodDeps))
 
 
 def pip_uninstall(lib):
@@ -131,14 +131,14 @@ def pip_uninstall(lib):
     if len(deletedLines):
         oldProdRequirements = getFileContent(PROD_REQUIREMENTS)
         with open(PROD_REQUIREMENTS, "w") as pfile:
-            prodLines = oldProdRequirements.split("\n")
+            prodLines = oldProdRequirements.split(os.linesep)
             newProdLines = []
             for line in prodLines:
                 if line not in deletedLines:
                     newProdLines.append(line)
             newProdLines = list(set(newProdLines))
             newProdLines.sort()
-            pfile.write("\n".join(newProdLines))
+            pfile.write(os.linesep.join(newProdLines))
 
 
 def getIsolatedDeps(lib):
@@ -177,8 +177,8 @@ def getFileContent(file):
 
 
 def getDiffLines(oldContent="", newContent="", mode="new"):
-    oldLines = oldContent.split("\n")
-    newLines = newContent.split("\n")
+    oldLines = oldContent.split(os.linesep)
+    newLines = newContent.split(os.linesep)
     lines = []
     ls1, ls2 = (newLines, oldLines) if mode == "new" else (oldLines, newLines)
     for line in ls1:
@@ -188,7 +188,7 @@ def getDiffLines(oldContent="", newContent="", mode="new"):
 
 
 def getExactDeps(requirementsContent, lib, recursive=False, skipDeps=[]):
-    requirements = requirementsContent.split("\n")
+    requirements = requirementsContent.split(os.linesep)
     deps = getPackageDeps(lib)
     libName = getLibNameOnly(lib)
     deps.append(libName)
@@ -293,14 +293,18 @@ def main(*libs, mode="install"):
         initConfig(config, PROD_SECTION, PROD_SECTION_REQUIRE)
         if len(prodDeps):
             prodDeps.sort()
-            config[PROD_SECTION][PROD_SECTION_REQUIRE] = "\n" + "\n".join(prodDeps)
+            config[PROD_SECTION][PROD_SECTION_REQUIRE] = os.linesep + os.linesep.join(
+                prodDeps
+            )
         else:
             del config[PROD_SECTION][PROD_SECTION_REQUIRE]
     if devChanged:
         initConfig(config, DEV_SECTION, DEV_SECTION_REQUIRE)
         if len(devDeps):
             devDeps.sort()
-            config[DEV_SECTION][DEV_SECTION_REQUIRE] = "\n" + "\n".join(devDeps)
+            config[DEV_SECTION][DEV_SECTION_REQUIRE] = os.linesep + os.linesep.join(
+                devDeps
+            )
         else:
             del config[DEV_SECTION][DEV_SECTION_REQUIRE]
 

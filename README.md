@@ -253,38 +253,26 @@ make t testpath=tests/error/test_catch_errors.py::test_catch_errors_StackedExcep
 
 ## Building and distributing this package
 
-> Tl;dr, Update the version in the `setup.cfg` file, and then run `make bp` to build and publish your package to https://pypi.org.
-
-__IMPORTANT:__ First, make sure you've updated the version in the the `setup.cfg` file. Ideally, you should also tag your git repository `git tag -a vx.x.x -m vx.x.x`.
-
-To build your package, run:
-
+1. Make sure the test and lint operations have not produced errors:
+```shell
+make t
+```
+2. Build this package:
 ```shell
 make b
 ```
-
-This command is a wrapper around `python3 -m build`.
-
-To build and publish your package to https://pypi.org, run:
-
+> This command is a wrapper around `python3 -m build`.
+3. Version and tag this package using one of the following command (1):
+	- `make v cmd=bump`: Use this to bump the patch version.
+	- `make v cmd=bump ver=minor`: Use this to bump the minor version.
+	- `make v cmd=bump ver=major`: Use this to bump the major version.
+	- `make v cmd=bump ver=x.x.x`: Use this to bump the version to a specific value.
+4 . Publish this package to https://pypi.org:
 ```shell
 make p
 ```
+> This command is a wrapper around the following commands: `python3 -m build; twine upload dist/*`
 
-This command is a wrapper around the following commands:
-
-```shell
-python3 -m build; \
-twine upload dist/*
-```
-
-Those two steps have been bundled in a single command:
-
-```shell
-make bp
-```
-
-> __IMPORTANT:__ Don't forget to update the version in the the `setup.cfg` file. Ideally, you should also tag your git repository `git tag -a vx.x.x -m vx.x.x`.
 
 To test your package locally before deploying it to https://pypi.org, you can run build and install it locally with this command:
 
@@ -293,6 +281,11 @@ make bi
 ```
 
 This command buils the package and follows with `pip install -e .`.
+
+> (1): This step applies three updates:
+> 1. Updates the version property in the `setup.cfg` file.
+> 2. Updates the `CHANGELOG.md` file using the commit messages between the current branch and the last version tag.
+> 3. git commit and tag (using the version number prefixed with `v`) the project.
 
 # FAQ
 
